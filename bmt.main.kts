@@ -25,13 +25,13 @@ Playwright.create().use { playwright ->
     taxibusPage.book()
 
     val bookingPage = BookingPage(page)
-    bookingPage.book()
+    bookingPage.book("Weilerswist Bf, Weilerswist", "Lommersum Kirche, Weilerswist", "07:20")
 
     val detailsPage = DetailsPage(page)
     detailsPage.fillInDetails()
 
     val summaryPage = SummaryPage(page)
-    summaryPage.bookNow()
+    //summaryPage.bookNow()
 
     page.screenshot(Page.ScreenshotOptions().setPath(Path("summary.png")))
 }
@@ -82,14 +82,14 @@ class BookingPage(page: Page) {
     private val `continue` =
         page.getByRole(BUTTON, Page.GetByRoleOptions().setName("weiter"))
 
-    fun book() {
-        stationStart.fill("Weilerswist Bf, Weilerswist")
-        stationEnd.fill("Lommersum Kirche, Weilerswist")
+    fun book(start: String, end: String, departure: String) {
+        stationStart.fill(start)
+        stationEnd.fill(end)
 
         val tomorrow = ZonedDateTime.now(ZoneId.of("Europe/Berlin")).plusDays(1)
         date.fill(tomorrow.format(DateTimeFormatter.ofPattern("dd.MM.yyyy")))
 
-        time.fill("07:20")
+        time.fill(departure)
 
         findConnections.click()
 
@@ -120,3 +120,4 @@ class SummaryPage(page: Page) {
         bookNow.click()
     }
 }
+
