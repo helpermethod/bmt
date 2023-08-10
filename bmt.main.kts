@@ -10,6 +10,7 @@ import com.microsoft.playwright.options.AriaRole.LINK
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
+import kotlin.io.path.Path
 
 Playwright.create().use { playwright ->
     val browser = playwright.chromium().launch(BrowserType.LaunchOptions().setHeadless(false).setSlowMo(500.0))
@@ -25,6 +26,14 @@ Playwright.create().use { playwright ->
 
     val bookingPage = BookingPage(page)
     bookingPage.book()
+
+    val detailsPage = DetailsPage(page)
+    detailsPage.fillInDetails()
+
+    val summaryPage = SummaryPage(page)
+    summaryPage.bookNow()
+
+    page.screenshot(Page.ScreenshotOptions().setPath(Path("summary.png")))
 }
 
 class TaxibusPage(private val page: Page) {
@@ -70,6 +79,8 @@ class BookingPage(page: Page) {
         page.getByLabel("Uhrzeit")
     private val findConnections =
         page.getByRole(LINK, Page.GetByRoleOptions().setName("Verbindungen suchen"))
+    private val `continue` =
+        page.getByRole(BUTTON, Page.GetByRoleOptions().setName("weiter"))
 
     fun book() {
         stationStart.fill("Weilerswist Bf, Weilerswist")
@@ -81,5 +92,31 @@ class BookingPage(page: Page) {
         time.fill("07:20")
 
         findConnections.click()
+
+        // TODO make sure that the correct connection is selected
+
+        `continue`.click()
+    }
+}
+
+class DetailsPage(page: Page) {
+    private val ageGroup =
+        page.locator("select.age")
+    private val `continue` =
+        page.getByRole(BUTTON, Page.GetByRoleOptions().setName("weiter"))
+
+    fun fillInDetails() {
+        ageGroup.selectOption("Kind (6-14 Jahren)")
+
+        `continue`.click()
+    }
+}
+
+class SummaryPage(page: Page) {
+    private val bookNow =
+        page.getByRole(BUTTON, Page.GetByRoleOptions().setName("Jetzt buchen"))
+
+    fun bookNow() {
+        bookNow.click()
     }
 }
