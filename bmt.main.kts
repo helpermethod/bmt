@@ -5,33 +5,81 @@
 import com.microsoft.playwright.BrowserType
 import com.microsoft.playwright.Page
 import com.microsoft.playwright.Playwright
-import com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat
 import com.microsoft.playwright.options.AriaRole.BUTTON
-import kotlin.io.path.Path
+import com.microsoft.playwright.options.AriaRole.LINK
+import java.time.ZoneId
+import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
 
 Playwright.create().use { playwright ->
     val browser = playwright.chromium().launch(BrowserType.LaunchOptions().setHeadless(false).setSlowMo(500.0))
     val page = browser.newPage()
 
-    page.navigate("https://www.rvk.de/login")
+    val taxibusPage = TaxibusPage(page)
 
-    assertThat(page).hasTitle("Login")
+    taxibusPage.navigate()
+    taxibusPage.cookieConsent()
+    taxibusPage.login()
 
-    page
-        .getByRole(BUTTON, Page.GetByRoleOptions().setName("Anmelden"))
-        .click()
+    taxibusPage.book()
 
-    page
-        .locator("input[name='user']")
-        .fill(System.getenv("RVK_USERNAME"))
+    val bookingPage = BookingPage(page)
+    bookingPage.book()
+}
 
-    page
-        .locator("input[name='pass']")
-        .fill(System.getenv("RVK_PASSWORD"))
+class TaxibusPage(private val page: Page) {
+    private val cookieConsent =
+        page.getByRole(BUTTON, Page.GetByRoleOptions().setName("Alles Akzeptieren"))
+    private val username =
+        page.locator("input[name='user']")
+    private val password =
+        page.locator("input[name='pass']")
+    private val login =
+        page.getByRole(BUTTON, Page.GetByRoleOptions().setName("Anmelden"))
+    private val book =
+        page.getByRole(LINK, Page.GetByRoleOptions().setName("Weiter zur Buchung"))
 
-    page
-        .getByRole(BUTTON, )
-        .click()
+    fun navigate() {
+        page.navigate("https://www.rvk.de/taxibus-und-ast")
+    }
 
-    page.screenshot(Page.ScreenshotOptions().setPath(Path("fail.png")))
+    fun cookieConsent() {
+        cookieConsent.click()
+    }
+
+    fun login() {
+        username.fill(System.getenv("RVK_USERNAME"))
+        password.fill(System.getenv("RVK_PASSWORD"))
+
+        login.click()
+    }
+
+    fun book() {
+        book.click()
+    }
+}
+
+class BookingPage(page: Page) {
+    private val stationStart =
+        page.getByLabel("Abfahrtshaltestelle")
+    private val stationEnd =
+        page.getByLabel("Zielhaltestelle")
+    private val date =
+        page.getByLabel("Datum")
+    private val time =
+        page.getByLabel("Uhrzeit")
+    private val findConnections =
+        page.getByRole(LINK, Page.GetByRoleOptions().setName("Verbindungen suchen"))
+
+    fun book() {
+        stationStart.fill("Weilerswist Bf, Weilerswist")
+        stationEnd.fill("Lommersum Kirche, Weilerswist")
+
+        val tomorrow = ZonedDateTime.now(ZoneId.of("Europe/Berlin")).plusDays(1)
+        date.fill(tomorrow.format(DateTimeFormatter.ofPattern("dd.MM.yyyy")))
+
+        time.fill("07:20")
+
+        findConnections.click()
+    }
 }
