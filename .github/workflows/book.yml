@@ -1,5 +1,6 @@
 name: Book
 on:
+  workflow_dispatch
   schedule:
     - cron: '45 15 * * SUN-THU'
 jobs:
