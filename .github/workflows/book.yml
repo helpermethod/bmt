@@ -1,8 +1,7 @@
 name: Book
 on:
-  workflow_dispatch:
   schedule:
-    - cron: '45 15 * * SUN-THU'
+    - cron: '00 15 * * SUN-THU'
 jobs:
   book:
     runs-on: ubuntu-22.04
