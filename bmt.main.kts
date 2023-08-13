@@ -2,7 +2,6 @@
 
 @file:DependsOn("com.microsoft.playwright:playwright:1.35.1")
 
-import com.microsoft.playwright.BrowserType
 import com.microsoft.playwright.Page
 import com.microsoft.playwright.Playwright
 import com.microsoft.playwright.options.AriaRole.BUTTON
@@ -10,30 +9,44 @@ import com.microsoft.playwright.options.AriaRole.LINK
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
-import kotlin.io.path.Path
 
 Playwright.create().use { playwright ->
-    val browser = playwright.chromium().launch(BrowserType.LaunchOptions().setHeadless(false).setSlowMo(500.0))
-    val page = browser.newPage()
+    val browser = playwright.chromium().launch()
 
+    book(
+        browser.newContext().newPage(),
+        StationStart("Weilerswist Bf, Weilerswist"),
+        StationEnd("Lommersum Kirche, Weilerswist"),
+        Departure("07:20")
+    )
+
+    book(
+        browser.newContext().newPage(),
+        StationStart("Lommersum Kirche, Weilerswist"),
+        StationEnd("Weilerswist Bf, Weilerswist"),
+        Departure("07:20")
+    )
+}
+
+fun book(page: Page, stationStart: StationStart, stationEnd: StationEnd, departure: Departure) {
     val taxibusPage = TaxibusPage(page)
-
     taxibusPage.navigate()
     taxibusPage.cookieConsent()
     taxibusPage.login()
-
-    taxibusPage.book()
+    taxibusPage.startBooking()
 
     val bookingPage = BookingPage(page)
-    bookingPage.book("Weilerswist Bf, Weilerswist", "Lommersum Kirche, Weilerswist", "07:20")
+    bookingPage.book(
+        stationStart,
+        stationEnd,
+        departure
+    )
 
     val detailsPage = DetailsPage(page)
-    detailsPage.fillInDetails()
+    detailsPage.selectAgeGroup()
 
     val summaryPage = SummaryPage(page)
-    //summaryPage.bookNow()
-
-    page.screenshot(Page.ScreenshotOptions().setPath(Path("summary.png")))
+    summaryPage.bookNow()
 }
 
 class TaxibusPage(private val page: Page) {
@@ -63,7 +76,7 @@ class TaxibusPage(private val page: Page) {
         login.click()
     }
 
-    fun book() {
+    fun startBooking() {
         book.click()
     }
 }
@@ -82,18 +95,16 @@ class BookingPage(page: Page) {
     private val `continue` =
         page.getByRole(BUTTON, Page.GetByRoleOptions().setName("weiter"))
 
-    fun book(start: String, end: String, departure: String) {
-        stationStart.fill(start)
-        stationEnd.fill(end)
+    fun book(start: StationStart, end: StationEnd, departure: Departure) {
+        stationStart.fill(start.stationStart)
+        stationEnd.fill(end.stationEnd)
 
         val tomorrow = ZonedDateTime.now(ZoneId.of("Europe/Berlin")).plusDays(1)
         date.fill(tomorrow.format(DateTimeFormatter.ofPattern("dd.MM.yyyy")))
 
-        time.fill(departure)
+        time.fill(departure.departure)
 
         findConnections.click()
-
-        // TODO make sure that the correct connection is selected
 
         `continue`.click()
     }
@@ -105,7 +116,7 @@ class DetailsPage(page: Page) {
     private val `continue` =
         page.getByRole(BUTTON, Page.GetByRoleOptions().setName("weiter"))
 
-    fun fillInDetails() {
+    fun selectAgeGroup() {
         ageGroup.selectOption("Kind (6-14 Jahren)")
 
         `continue`.click()
@@ -121,3 +132,11 @@ class SummaryPage(page: Page) {
     }
 }
 
+@JvmInline
+value class StationStart(val stationStart: String)
+
+@JvmInline
+value class StationEnd(val stationEnd: String)
+
+@JvmInline
+value class Departure(val departure: String)
