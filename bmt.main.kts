@@ -24,7 +24,7 @@ Playwright.create().use { playwright ->
         browser.newContext().newPage(),
         StationStart("Lommersum Kirche, Weilerswist"),
         StationEnd("Weilerswist Bf, Weilerswist"),
-        Departure("07:20")
+        Departure("14:47")
     )
 }
 
