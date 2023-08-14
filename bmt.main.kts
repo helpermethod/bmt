@@ -65,7 +65,7 @@ fun bookTicket(page: Page, stationStart: StationStart, stationEnd: StationEnd, d
         .startBooking()
         .book(stationStart, stationEnd, departure)
         .selectAgeGroup()
-        //.bookNow()
+        .bookNow()
 }
 
 class TaxibusPage(private val page: Page) {
