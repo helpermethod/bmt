@@ -12,7 +12,3 @@ jobs:
           RVK_USERNAME: ${{ secrets.RVK_USERNAME }}
           RVK_PASSWORD: ${{ secrets.RVK_PASSWORD }}
         run: ./bmt.main.kts
-      - uses: actions/upload-artifact@v3
-        with:
-          name: playwright-report
-          path: ./*.zip
