@@ -15,7 +15,7 @@ import java.time.format.DateTimeFormatter
 import kotlin.io.path.Path
 
 Playwright.create().use { playwright ->
-    val browser = playwright.chromium().launch(BrowserType.LaunchOptions().setSlowMo(500.0).setHeadless(false))
+    val browser = playwright.chromium().launch()
 
     bookOutBoundTrip(browser.newContext())
     bookReturnTrip(browser.newContext())
