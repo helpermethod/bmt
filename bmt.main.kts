@@ -29,24 +29,18 @@ Playwright.create().use { playwright ->
 }
 
 fun book(page: Page, stationStart: StationStart, stationEnd: StationEnd, departure: Departure) {
-    val taxibusPage = TaxibusPage(page)
-    taxibusPage.navigate()
-    taxibusPage.cookieConsent()
-    taxibusPage.login()
-    taxibusPage.startBooking()
-
-    val bookingPage = BookingPage(page)
-    bookingPage.book(
-        stationStart,
-        stationEnd,
-        departure
-    )
-
-    val detailsPage = DetailsPage(page)
-    detailsPage.selectAgeGroup()
-
-    val summaryPage = SummaryPage(page)
-    summaryPage.bookNow()
+    TaxibusPage(page)
+        .navigate()
+        .cookieConsent()
+        .login()
+        .startBooking()
+        .book(
+            stationStart,
+            stationEnd,
+            departure
+        )
+        .selectAgeGroup()
+        .bookNow()
 }
 
 class TaxibusPage(private val page: Page) {
@@ -61,27 +55,29 @@ class TaxibusPage(private val page: Page) {
     private val book =
         page.getByRole(LINK, Page.GetByRoleOptions().setName("Weiter zur Buchung"))
 
-    fun navigate() {
+    fun navigate() = apply {
         page.navigate("https://www.rvk.de/taxibus-und-ast")
     }
 
-    fun cookieConsent() {
+    fun cookieConsent() = apply {
         cookieConsent.click()
     }
 
-    fun login() {
+    fun login() = apply {
         username.fill(System.getenv("RVK_USERNAME"))
         password.fill(System.getenv("RVK_PASSWORD"))
 
         login.click()
     }
 
-    fun startBooking() {
+    fun startBooking(): BookingPage {
         book.click()
+
+        return BookingPage(page)
     }
 }
 
-class BookingPage(page: Page) {
+class BookingPage(private val page: Page) {
     private val stationStart =
         page.getByLabel("Abfahrtshaltestelle")
     private val stationEnd =
@@ -95,7 +91,7 @@ class BookingPage(page: Page) {
     private val `continue` =
         page.getByRole(BUTTON, Page.GetByRoleOptions().setName("weiter"))
 
-    fun book(start: StationStart, end: StationEnd, departure: Departure) {
+    fun book(start: StationStart, end: StationEnd, departure: Departure): DetailsPage {
         stationStart.fill(start.stationStart)
         stationEnd.fill(end.stationEnd)
 
@@ -104,22 +100,27 @@ class BookingPage(page: Page) {
 
         time.fill(departure.departure)
 
+        // TODO
         findConnections.click()
 
         `continue`.click()
+
+        return DetailsPage(page)
     }
 }
 
-class DetailsPage(page: Page) {
+class DetailsPage(private val page: Page) {
     private val ageGroup =
         page.locator("select.age")
     private val `continue` =
         page.getByRole(BUTTON, Page.GetByRoleOptions().setName("weiter"))
 
-    fun selectAgeGroup() {
+    fun selectAgeGroup(): SummaryPage {
         ageGroup.selectOption("Kind (6-14 Jahren)")
 
         `continue`.click()
+
+        return SummaryPage(page)
     }
 }
 
