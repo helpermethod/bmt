@@ -34,11 +34,7 @@ fun book(page: Page, stationStart: StationStart, stationEnd: StationEnd, departu
         .cookieConsent()
         .login()
         .startBooking()
-        .book(
-            stationStart,
-            stationEnd,
-            departure
-        )
+        .book(stationStart, stationEnd, departure)
         .selectAgeGroup()
         .bookNow()
 }
@@ -100,7 +96,6 @@ class BookingPage(private val page: Page) {
 
         time.fill(departure.departure)
 
-        // TODO
         findConnections.click()
 
         `continue`.click()
