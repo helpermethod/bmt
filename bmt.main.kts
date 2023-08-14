@@ -3,6 +3,7 @@
 @file:DependsOn("com.microsoft.playwright:playwright:1.35.1")
 
 import com.microsoft.playwright.BrowserContext
+import com.microsoft.playwright.BrowserType
 import com.microsoft.playwright.Page
 import com.microsoft.playwright.Playwright
 import com.microsoft.playwright.Tracing
@@ -14,7 +15,7 @@ import java.time.format.DateTimeFormatter
 import kotlin.io.path.Path
 
 Playwright.create().use { playwright ->
-    val browser = playwright.chromium().launch()
+    val browser = playwright.chromium().launch(BrowserType.LaunchOptions().setSlowMo(500.0).setHeadless(false))
 
     bookOutBoundTrip(browser.newContext())
     bookReturnTrip(browser.newContext())
@@ -28,7 +29,7 @@ fun bookOutBoundTrip(context: BrowserContext) {
         }
     )
 
-    book(
+    bookTicket(
         context.newPage(),
         StationStart("Weilerswist Bf, Weilerswist"),
         StationEnd("Lommersum Kirche, Weilerswist"),
@@ -46,7 +47,7 @@ fun bookReturnTrip(context: BrowserContext) {
         }
     )
 
-    book(
+    bookTicket(
         context.newPage(),
         StationStart("Lommersum Kirche, Weilerswist"),
         StationEnd("Weilerswist Bf, Weilerswist"),
@@ -56,7 +57,7 @@ fun bookReturnTrip(context: BrowserContext) {
     context.tracing().stop(Tracing.StopOptions().setPath(Path("return.zip")))
 }
 
-fun book(page: Page, stationStart: StationStart, stationEnd: StationEnd, departure: Departure) {
+fun bookTicket(page: Page, stationStart: StationStart, stationEnd: StationEnd, departure: Departure) {
     TaxibusPage(page)
         .navigate()
         .cookieConsent()
@@ -64,7 +65,7 @@ fun book(page: Page, stationStart: StationStart, stationEnd: StationEnd, departu
         .startBooking()
         .book(stationStart, stationEnd, departure)
         .selectAgeGroup()
-        .bookNow()
+        //.bookNow()
 }
 
 class TaxibusPage(private val page: Page) {
