@@ -17,8 +17,8 @@ import kotlin.io.path.Path
 Playwright.create().use { playwright ->
     val browser = playwright.chromium().launch()
 
-    bookOutBoundTrip(browser.newContext())
-    bookReturnTrip(browser.newContext())
+    browser.newContext().use(::bookOutBoundTrip)
+    browser.newContext().use(::bookReturnTrip)
 }
 
 fun bookOutBoundTrip(context: BrowserContext) {
