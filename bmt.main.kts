@@ -3,12 +3,12 @@
 @file:DependsOn("com.microsoft.playwright:playwright:1.35.1")
 
 import com.microsoft.playwright.BrowserContext
-import com.microsoft.playwright.BrowserType
 import com.microsoft.playwright.Page
 import com.microsoft.playwright.Playwright
 import com.microsoft.playwright.Tracing
 import com.microsoft.playwright.options.AriaRole.BUTTON
 import com.microsoft.playwright.options.AriaRole.LINK
+import java.nio.file.Path
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
@@ -22,39 +22,25 @@ Playwright.create().use { playwright ->
 }
 
 fun bookOutBoundTrip(context: BrowserContext) {
-    context.tracing().start(
-        Tracing.StartOptions().apply {
-            screenshots = true
-            snapshots = true
-        }
-    )
-
-    bookTicket(
-        context.newPage(),
-        StationStart("Weilerswist Bf, Weilerswist"),
-        StationEnd("Lommersum Kirche, Weilerswist"),
-        Departure("07:20")
-    )
-
-    context.tracing().stop(Tracing.StopOptions().setPath(Path("outbound.zip")))
+    context.withTracing(Path("outbound.zip")) {
+        bookTicket(
+            newPage(),
+            StationStart("Weilerswist Bf, Weilerswist"),
+            StationEnd("Lommersum Kirche, Weilerswist"),
+            Departure("07:20")
+        )
+    }
 }
 
 fun bookReturnTrip(context: BrowserContext) {
-    context.tracing().start(
-        Tracing.StartOptions().apply {
-            screenshots = true
-            snapshots = true
-        }
-    )
-
-    bookTicket(
-        context.newPage(),
-        StationStart("Lommersum Kirche, Weilerswist"),
-        StationEnd("Weilerswist Bf, Weilerswist"),
-        Departure("14:47")
-    )
-
-    context.tracing().stop(Tracing.StopOptions().setPath(Path("return.zip")))
+    context.withTracing(Path("return.zip")) {
+        bookTicket(
+            newPage(),
+            StationStart("Lommersum Kirche, Weilerswist"),
+            StationEnd("Weilerswist Bf, Weilerswist"),
+            Departure("14:47")
+        )
+    }
 }
 
 fun bookTicket(page: Page, stationStart: StationStart, stationEnd: StationEnd, departure: Departure) {
@@ -165,3 +151,16 @@ value class StationEnd(val stationEnd: String)
 
 @JvmInline
 value class Departure(val departure: String)
+
+fun BrowserContext.withTracing(path: Path, fn: BrowserContext.() -> Unit) {
+    tracing().start(
+        Tracing.StartOptions().apply {
+            screenshots = true
+            snapshots = true
+        }
+    )
+
+    fn(this)
+
+    tracing().stop(Tracing.StopOptions().setPath(path))
+}
