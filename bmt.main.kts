@@ -9,7 +9,6 @@ import com.microsoft.playwright.options.AriaRole
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
-import kotlin.io.path.Path
 
 Playwright.create().use { playwright ->
     val browser = playwright.chromium().launch()
@@ -19,35 +18,21 @@ Playwright.create().use { playwright ->
 }
 
 fun bookOutBoundTrip(context: BrowserContext) {
-    val page = context.newPage()
-
     book(
-        page,
+        context.newPage(),
         StationStart("Weilerswist Bf, Weilerswist"),
         StationEnd("Lommersum Kirche, Weilerswist"),
         Departure("07:20")
     )
-
-    page.screenshot(Page.ScreenshotOptions().apply {
-        path = Path("outbound.png")
-        fullPage = true
-    })
 }
 
 fun bookReturnTrip(context: BrowserContext) {
-    val page = context.newPage()
-
     book(
-        page,
+        context.newPage(),
         StationStart("Lommersum Kirche, Weilerswist"),
         StationEnd("Weilerswist Bf, Weilerswist"),
         Departure("14:47")
     )
-
-    page.screenshot(Page.ScreenshotOptions().apply {
-        path = Path("return.png")
-        fullPage = true
-    })
 }
 
 fun book(page: Page, stationStart: StationStart, stationEnd: StationEnd, departure: Departure) {
