@@ -5,10 +5,7 @@
 import com.microsoft.playwright.BrowserContext
 import com.microsoft.playwright.Page
 import com.microsoft.playwright.Playwright
-import com.microsoft.playwright.Tracing
-import com.microsoft.playwright.options.AriaRole.BUTTON
-import com.microsoft.playwright.options.AriaRole.LINK
-import java.nio.file.Path
+import com.microsoft.playwright.options.AriaRole
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
@@ -24,7 +21,7 @@ Playwright.create().use { playwright ->
 fun bookOutBoundTrip(context: BrowserContext) {
     val page = context.newPage()
 
-    bookTicket(
+    book(
         page,
         StationStart("Weilerswist Bf, Weilerswist"),
         StationEnd("Lommersum Kirche, Weilerswist"),
@@ -40,7 +37,7 @@ fun bookOutBoundTrip(context: BrowserContext) {
 fun bookReturnTrip(context: BrowserContext) {
     val page = context.newPage()
 
-    bookTicket(
+    book(
         page,
         StationStart("Lommersum Kirche, Weilerswist"),
         StationEnd("Weilerswist Bf, Weilerswist"),
@@ -53,7 +50,7 @@ fun bookReturnTrip(context: BrowserContext) {
     })
 }
 
-fun bookTicket(page: Page, stationStart: StationStart, stationEnd: StationEnd, departure: Departure) {
+fun book(page: Page, stationStart: StationStart, stationEnd: StationEnd, departure: Departure) {
     TaxibusPage(page)
         .navigate()
         .cookieConsent()
@@ -61,20 +58,15 @@ fun bookTicket(page: Page, stationStart: StationStart, stationEnd: StationEnd, d
         .startBooking()
         .book(stationStart, stationEnd, departure)
         .selectAgeGroup()
-        .bookNow()
+        //.bookNow()
 }
 
 class TaxibusPage(private val page: Page) {
-    private val cookieConsent =
-        page.getByRole(BUTTON, Page.GetByRoleOptions().setName("Alles Akzeptieren"))
-    private val username =
-        page.locator("input[name='user']")
-    private val password =
-        page.locator("input[name='pass']")
-    private val login =
-        page.getByRole(BUTTON, Page.GetByRoleOptions().setName("Anmelden"))
-    private val book =
-        page.getByRole(LINK, Page.GetByRoleOptions().setName("Weiter zur Buchung"))
+    private val cookieConsent = page.getByRole(AriaRole.BUTTON, Page.GetByRoleOptions().setName("Alles Akzeptieren"))
+    private val username = page.locator("input[name='user']")
+    private val password = page.locator("input[name='pass']")
+    private val login = page.getByRole(AriaRole.BUTTON, Page.GetByRoleOptions().setName("Anmelden"))
+    private val book = page.getByRole(AriaRole.LINK, Page.GetByRoleOptions().setName("Weiter zur Buchung"))
 
     fun navigate() = apply {
         page.navigate("https://www.rvk.de/taxibus-und-ast")
@@ -99,18 +91,12 @@ class TaxibusPage(private val page: Page) {
 }
 
 class BookingPage(private val page: Page) {
-    private val stationStart =
-        page.getByLabel("Abfahrtshaltestelle")
-    private val stationEnd =
-        page.getByLabel("Zielhaltestelle")
-    private val date =
-        page.getByLabel("Datum")
-    private val time =
-        page.getByLabel("Uhrzeit")
-    private val findConnections =
-        page.getByRole(LINK, Page.GetByRoleOptions().setName("Verbindungen suchen"))
-    private val `continue` =
-        page.getByRole(BUTTON, Page.GetByRoleOptions().setName("weiter"))
+    private val stationStart = page.getByLabel("Abfahrtshaltestelle")
+    private val stationEnd = page.getByLabel("Zielhaltestelle")
+    private val date = page.getByLabel("Datum")
+    private val time = page.getByLabel("Uhrzeit")
+    private val findConnections = page.getByRole(AriaRole.LINK, Page.GetByRoleOptions().setName("Verbindungen suchen"))
+    private val `continue` = page.getByRole(AriaRole.BUTTON, Page.GetByRoleOptions().setName("weiter"))
 
     fun book(start: StationStart, end: StationEnd, departure: Departure): DetailsPage {
         stationStart.fill(start.stationStart)
@@ -130,10 +116,8 @@ class BookingPage(private val page: Page) {
 }
 
 class DetailsPage(private val page: Page) {
-    private val ageGroup =
-        page.locator("select.age")
-    private val `continue` =
-        page.getByRole(BUTTON, Page.GetByRoleOptions().setName("weiter"))
+    private val ageGroup = page.locator("select.age")
+    private val `continue` = page.getByRole(AriaRole.BUTTON, Page.GetByRoleOptions().setName("weiter"))
 
     fun selectAgeGroup(): SummaryPage {
         ageGroup.selectOption("Kind (6-14 Jahren)")
@@ -145,8 +129,7 @@ class DetailsPage(private val page: Page) {
 }
 
 class SummaryPage(page: Page) {
-    private val bookNow =
-        page.getByRole(BUTTON, Page.GetByRoleOptions().setName("Jetzt buchen"))
+    private val bookNow = page.getByRole(AriaRole.BUTTON, Page.GetByRoleOptions().setName("Jetzt buchen"))
 
     fun bookNow() {
         bookNow.click()
