@@ -25,7 +25,7 @@ fun bookOutBoundTrip(context: BrowserContext) {
     val page = context.newPage()
 
     bookTicket(
-        newPage(),
+        page,
         StationStart("Weilerswist Bf, Weilerswist"),
         StationEnd("Lommersum Kirche, Weilerswist"),
         Departure("07:20")
