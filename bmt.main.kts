@@ -22,25 +22,35 @@ Playwright.create().use { playwright ->
 }
 
 fun bookOutBoundTrip(context: BrowserContext) {
-    context.withTracing(Path("outbound.zip")) {
-        bookTicket(
-            newPage(),
-            StationStart("Weilerswist Bf, Weilerswist"),
-            StationEnd("Lommersum Kirche, Weilerswist"),
-            Departure("07:20")
-        )
-    }
+    val page = context.newPage()
+
+    bookTicket(
+        newPage(),
+        StationStart("Weilerswist Bf, Weilerswist"),
+        StationEnd("Lommersum Kirche, Weilerswist"),
+        Departure("07:20")
+    )
+
+    page.screenshot(Page.ScreenshotOptions().apply {
+        path = Path("outbound.png")
+        fullPage = true
+    })
 }
 
 fun bookReturnTrip(context: BrowserContext) {
-    context.withTracing(Path("return.zip")) {
-        bookTicket(
-            newPage(),
-            StationStart("Lommersum Kirche, Weilerswist"),
-            StationEnd("Weilerswist Bf, Weilerswist"),
-            Departure("14:47")
-        )
-    }
+    val page = context.newPage()
+
+    bookTicket(
+        page,
+        StationStart("Lommersum Kirche, Weilerswist"),
+        StationEnd("Weilerswist Bf, Weilerswist"),
+        Departure("14:47")
+    )
+
+    page.screenshot(Page.ScreenshotOptions().apply {
+        path = Path("return.png")
+        fullPage = true
+    })
 }
 
 fun bookTicket(page: Page, stationStart: StationStart, stationEnd: StationEnd, departure: Departure) {
@@ -151,16 +161,3 @@ value class StationEnd(val stationEnd: String)
 
 @JvmInline
 value class Departure(val departure: String)
-
-fun BrowserContext.withTracing(path: Path, fn: BrowserContext.() -> Unit) {
-    tracing().start(
-        Tracing.StartOptions().apply {
-            screenshots = true
-            snapshots = true
-        }
-    )
-
-    fn(this)
-
-    tracing().stop(Tracing.StopOptions().setPath(path))
-}

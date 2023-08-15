@@ -14,5 +14,5 @@ jobs:
         run: ./bmt.main.kts
       - uses: actions/upload-artifact@v3
         with:
-          name: playwright-report
-          path: ./*.zip
+          name: screenshots
+          path: ./*.png
