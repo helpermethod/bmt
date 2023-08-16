@@ -18,7 +18,7 @@ Playwright.create().use { playwright ->
 }
 
 fun bookOutBoundTrip(context: BrowserContext) {
-    book(
+    bookTicket(
         context.newPage(),
         StationStart("Weilerswist Bf, Weilerswist"),
         StationEnd("Lommersum Kirche, Weilerswist"),
@@ -27,7 +27,7 @@ fun bookOutBoundTrip(context: BrowserContext) {
 }
 
 fun bookReturnTrip(context: BrowserContext) {
-    book(
+    bookTicket(
         context.newPage(),
         StationStart("Lommersum Kirche, Weilerswist"),
         StationEnd("Weilerswist Bf, Weilerswist"),
@@ -35,13 +35,14 @@ fun bookReturnTrip(context: BrowserContext) {
     )
 }
 
-fun book(page: Page, stationStart: StationStart, stationEnd: StationEnd, departure: Departure) {
+fun bookTicket(page: Page, stationStart: StationStart, stationEnd: StationEnd, departure: Departure) {
     TaxibusPage(page)
         .navigate()
         .cookieConsent()
         .login()
         .startBooking()
         .book(stationStart, stationEnd, departure)
+        .selectConnection(departure)
         .selectAgeGroup()
         .bookNow()
 }
@@ -83,7 +84,7 @@ class BookingPage(private val page: Page) {
     private val findConnections = page.getByRole(AriaRole.LINK, Page.GetByRoleOptions().setName("Verbindungen suchen"))
     private val `continue` = page.getByRole(AriaRole.BUTTON, Page.GetByRoleOptions().setName("weiter"))
 
-    fun book(start: StationStart, end: StationEnd, departure: Departure): DetailsPage {
+    fun book(start: StationStart, end: StationEnd, departure: Departure): ConnectionsPage {
         stationStart.fill(start.stationStart)
         stationEnd.fill(end.stationEnd)
 
@@ -93,6 +94,16 @@ class BookingPage(private val page: Page) {
         time.fill(departure.departure)
 
         findConnections.click()
+
+        return ConnectionsPage(page)
+    }
+}
+
+class ConnectionsPage(private val page: Page) {
+    private val `continue` = page.getByRole(AriaRole.BUTTON, Page.GetByRoleOptions().setName("weiter"))
+
+    fun selectConnection(departure: Departure): DetailsPage {
+        page.getByRole(AriaRole.LINK, Page.GetByRoleOptions().setName("ab ${departure.departure}")).click()
 
         `continue`.click()
 
