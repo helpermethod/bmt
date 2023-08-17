@@ -3,6 +3,7 @@
 @file:DependsOn("com.microsoft.playwright:playwright:1.37.0")
 
 import com.microsoft.playwright.BrowserContext
+import com.microsoft.playwright.Locator
 import com.microsoft.playwright.Page
 import com.microsoft.playwright.Playwright
 import com.microsoft.playwright.options.AriaRole
@@ -103,7 +104,10 @@ class ConnectionsPage(private val page: Page) {
     private val `continue` = page.getByRole(AriaRole.BUTTON, Page.GetByRoleOptions().setName("weiter"))
 
     fun selectConnection(departure: Departure): DetailsPage {
-        page.getByRole(AriaRole.LINK, Page.GetByRoleOptions().setName("ab ${departure.departure}")).click()
+        page
+            .getByRole(AriaRole.LINK)
+            .filter(Locator.FilterOptions().setHasText("ab ${departure.departure}"))
+            .click()
 
         `continue`.click()
 
