@@ -86,13 +86,13 @@ class BookingPage(private val page: Page) {
     private val `continue` = page.getByRole(AriaRole.BUTTON, Page.GetByRoleOptions().setName("weiter"))
 
     fun book(start: StationStart, end: StationEnd, departure: Departure): ConnectionsPage {
-        stationStart.fill(start.stationStart)
-        stationEnd.fill(end.stationEnd)
+        stationStart.fill(start.value)
+        stationEnd.fill(end.value)
 
         val tomorrow = ZonedDateTime.now(ZoneId.of("Europe/Berlin")).plusDays(1)
         date.fill(tomorrow.format(DateTimeFormatter.ofPattern("dd.MM.yyyy")))
 
-        time.fill(departure.departure)
+        time.fill(departure.value)
 
         findConnections.click()
 
@@ -106,7 +106,7 @@ class ConnectionsPage(private val page: Page) {
     fun selectConnection(departure: Departure): DetailsPage {
         page
             .getByRole(AriaRole.LINK)
-            .filter(Locator.FilterOptions().setHasText("ab ${departure.departure}"))
+            .filter(Locator.FilterOptions().setHasText("ab ${departure.value}"))
             .click()
 
         `continue`.click()
@@ -137,10 +137,10 @@ class SummaryPage(page: Page) {
 }
 
 @JvmInline
-value class StationStart(val stationStart: String)
+value class StationStart(val value: String)
 
 @JvmInline
-value class StationEnd(val stationEnd: String)
+value class StationEnd(val value: String)
 
 @JvmInline
-value class Departure(val departure: String)
+value class Departure(val value: String)
