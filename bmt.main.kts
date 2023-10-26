@@ -13,7 +13,7 @@ import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import kotlin.io.path.Path
 
-val today: ZonedDateTime = ZonedDateTime.now(ZoneId.of("Europe/Berlin"))
+val tomorrow: ZonedDateTime = ZonedDateTime.now(ZoneId.of("Europe/Berlin"))
 
 Playwright.create().use { playwright ->
     val browser = playwright.chromium().launch()
@@ -41,7 +41,7 @@ fun bookReturnTrip(context: BrowserContext) {
 }
 
 fun selectDeparture() =
-    if (today.dayOfWeek == DayOfWeek.FRIDAY) Departure("13:47") else Departure("14:47")
+    if (tomorrow.dayOfWeek == DayOfWeek.FRIDAY) Departure("13:47") else Departure("14:47")
 
 fun bookTicket(page: Page, stationStart: StationStart, stationEnd: StationEnd, departure: Departure) {
     TaxibusPage(page)
@@ -96,9 +96,7 @@ class BookingPage(private val page: Page) {
         stationStart.fill(start.value)
         stationEnd.fill(end.value)
 
-        val tomorrow = today.plusDays(1)
         date.fill(tomorrow.format(DateTimeFormatter.ofPattern("dd.MM.yyyy")))
-
         time.fill(departure.value)
 
         findConnections.click()
