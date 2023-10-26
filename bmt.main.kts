@@ -7,9 +7,13 @@ import com.microsoft.playwright.Locator
 import com.microsoft.playwright.Page
 import com.microsoft.playwright.Playwright
 import com.microsoft.playwright.options.AriaRole
+import java.time.DayOfWeek
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
+import kotlin.io.path.Path
+
+val today: ZonedDateTime = ZonedDateTime.now(ZoneId.of("Europe/Berlin"))
 
 Playwright.create().use { playwright ->
     val browser = playwright.chromium().launch()
@@ -32,9 +36,12 @@ fun bookReturnTrip(context: BrowserContext) {
         context.newPage(),
         StationStart("Lommersum Kirche, Weilerswist"),
         StationEnd("Weilerswist Bf, Weilerswist"),
-        Departure("14:47")
+        selectDeparture()
     )
 }
+
+fun selectDeparture() =
+    if (today.dayOfWeek == DayOfWeek.FRIDAY) Departure("13:47") else Departure("14:47")
 
 fun bookTicket(page: Page, stationStart: StationStart, stationEnd: StationEnd, departure: Departure) {
     TaxibusPage(page)
@@ -89,7 +96,7 @@ class BookingPage(private val page: Page) {
         stationStart.fill(start.value)
         stationEnd.fill(end.value)
 
-        val tomorrow = ZonedDateTime.now(ZoneId.of("Europe/Berlin")).plusDays(1)
+        val tomorrow = today.plusDays(1)
         date.fill(tomorrow.format(DateTimeFormatter.ofPattern("dd.MM.yyyy")))
 
         time.fill(departure.value)
