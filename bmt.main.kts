@@ -13,7 +13,7 @@ import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import kotlin.io.path.Path
 
-val tomorrow: ZonedDateTime = ZonedDateTime.now(ZoneId.of("Europe/Berlin"))
+val tomorrow: ZonedDateTime = ZonedDateTime.now(ZoneId.of("Europe/Berlin")).plusDays(1)
 
 Playwright.create().use { playwright ->
     val browser = playwright.chromium().launch()
