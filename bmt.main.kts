@@ -78,7 +78,7 @@ class TaxibusPage(private val page: Page) {
     }
 
     fun startBooking(): BookingPage {
-        book.click()
+        page.waitForResponse("**/tx_taxibus.js*", book::click)
 
         return BookingPage(page)
     }
