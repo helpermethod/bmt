@@ -7,13 +7,18 @@ import com.microsoft.playwright.Locator
 import com.microsoft.playwright.Page
 import com.microsoft.playwright.Playwright
 import com.microsoft.playwright.options.AriaRole
+import com.microsoft.playwright.options.LoadState
 import java.time.DayOfWeek
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import kotlin.io.path.Path
+import kotlin.time.Duration.Companion.days
+import kotlin.time.toJavaDuration
 
-val tomorrow: ZonedDateTime = ZonedDateTime.now(ZoneId.of("Europe/Berlin")).plusDays(1)
+val today: ZonedDateTime = ZonedDateTime.now(ZoneId.of("Europe/Berlin"))
+val tomorrow: ZonedDateTime = today.plusDays(1L)
+val formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy")
 
 Playwright.create().use { playwright ->
     val browser = playwright.chromium().launch()
@@ -78,7 +83,9 @@ class TaxibusPage(private val page: Page) {
     }
 
     fun startBooking(): BookingPage {
-        page.waitForResponse("**/tx_taxibus.js*", book::click)
+        book.click()
+
+        page.waitForLoadState(LoadState.NETWORKIDLE)
 
         return BookingPage(page)
     }
