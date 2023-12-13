@@ -7,33 +7,19 @@ import com.microsoft.playwright.Locator
 import com.microsoft.playwright.Page
 import com.microsoft.playwright.Playwright
 import com.microsoft.playwright.options.AriaRole
-import com.microsoft.playwright.options.LoadState
 import java.time.DayOfWeek
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
-import kotlin.io.path.Path
-import kotlin.time.Duration.Companion.days
-import kotlin.time.toJavaDuration
 
 val today: ZonedDateTime = ZonedDateTime.now(ZoneId.of("Europe/Berlin"))
 val tomorrow: ZonedDateTime = today.plusDays(1L)
-val formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy")
+val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy")
 
 Playwright.create().use { playwright ->
     val browser = playwright.chromium().launch()
 
-    browser.newContext().use(::bookOutBoundTrip)
     browser.newContext().use(::bookReturnTrip)
-}
-
-fun bookOutBoundTrip(context: BrowserContext) {
-    bookTicket(
-        context.newPage(),
-        StationStart("Weilerswist Bf, Weilerswist"),
-        StationEnd("Lommersum Kirche, Weilerswist"),
-        Departure("07:20")
-    )
 }
 
 fun bookReturnTrip(context: BrowserContext) {
@@ -46,30 +32,25 @@ fun bookReturnTrip(context: BrowserContext) {
 }
 
 fun selectDeparture() =
-    if (tomorrow.dayOfWeek == DayOfWeek.FRIDAY) Departure("13:47") else Departure("14:47")
+    if (tomorrow.dayOfWeek == DayOfWeek.FRIDAY) Departure("13:47") else Departure("14:48")
 
 fun bookTicket(page: Page, stationStart: StationStart, stationEnd: StationEnd, departure: Departure) {
-    TaxibusPage(page)
-        .navigate()
+    openLoginPage(page)
         .cookieConsent()
         .login()
-        .startBooking()
+        .openBookingPage()
         .book(stationStart, stationEnd, departure)
         .selectConnection(departure)
         .selectAgeGroup()
         .bookNow()
 }
 
-class TaxibusPage(private val page: Page) {
+class LoginPage(private val page: Page) {
     private val cookieConsent = page.getByRole(AriaRole.BUTTON, Page.GetByRoleOptions().setName("Alles Akzeptieren"))
     private val username = page.locator("input[name='user']")
     private val password = page.locator("input[name='pass']")
     private val login = page.getByRole(AriaRole.BUTTON, Page.GetByRoleOptions().setName("Anmelden"))
     private val book = page.getByRole(AriaRole.LINK, Page.GetByRoleOptions().setName("Weiter zur Buchung"))
-
-    fun navigate() = apply {
-        page.navigate("https://www.rvk.de/taxibus-und-ast")
-    }
 
     fun cookieConsent() = apply {
         cookieConsent.click()
@@ -82,19 +63,26 @@ class TaxibusPage(private val page: Page) {
         login.click()
     }
 
-    fun startBooking(): BookingPage {
-        book.click()
-
-        page.waitForLoadState(LoadState.NETWORKIDLE)
+    fun openBookingPage(): BookingPage {
+        page.navigate("https://www.rvk.de/meinefahrt/einzelauftrag")
 
         return BookingPage(page)
     }
 }
 
+fun openLoginPage(page: Page): LoginPage {
+    page.navigate("https://www.rvk.de/login")
+
+    return LoginPage(page)
+}
+
 class BookingPage(private val page: Page) {
     private val stationStart = page.getByLabel("Abfahrtshaltestelle")
     private val stationEnd = page.getByLabel("Zielhaltestelle")
-    private val date = page.getByLabel("Datum")
+    private val date =
+        page
+            .getByLabel("Datum")
+            .filter(Locator.FilterOptions().setHasText(formatter.format(today)))
     private val time = page.getByLabel("Uhrzeit")
     private val findConnections = page.getByRole(AriaRole.LINK, Page.GetByRoleOptions().setName("Verbindungen suchen"))
     private val `continue` = page.getByRole(AriaRole.BUTTON, Page.GetByRoleOptions().setName("weiter"))
