@@ -79,10 +79,7 @@ fun openLoginPage(page: Page): LoginPage {
 class BookingPage(private val page: Page) {
     private val stationStart = page.getByLabel("Abfahrtshaltestelle")
     private val stationEnd = page.getByLabel("Zielhaltestelle")
-    private val date =
-        page
-            .getByLabel("Datum")
-            .filter(Locator.FilterOptions().setHasText(formatter.format(today)))
+    private val date = page.getByLabel("Datum").and(page.getByText(formatter.format(today)))
     private val time = page.getByLabel("Uhrzeit")
     private val findConnections = page.getByRole(AriaRole.LINK, Page.GetByRoleOptions().setName("Verbindungen suchen"))
     private val `continue` = page.getByRole(AriaRole.BUTTON, Page.GetByRoleOptions().setName("weiter"))
