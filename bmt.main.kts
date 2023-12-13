@@ -64,7 +64,9 @@ class LoginPage(private val page: Page) {
     }
 
     fun openBookingPage(): BookingPage {
-        page.navigate("https://www.rvk.de/meinefahrt/einzelauftrag")
+        page.waitForResponse("**/tx_taxibus.js*") {
+            page.navigate("https://www.rvk.de/meinefahrt/einzelauftrag")
+        }
 
         return BookingPage(page)
     }
@@ -79,7 +81,7 @@ fun openLoginPage(page: Page): LoginPage {
 class BookingPage(private val page: Page) {
     private val stationStart = page.getByLabel("Abfahrtshaltestelle")
     private val stationEnd = page.getByLabel("Zielhaltestelle")
-    private val date = page.getByLabel("Datum").and(page.getByText(formatter.format(today)))
+    private val date = page.getByLabel("Datum")
     private val time = page.getByLabel("Uhrzeit")
     private val findConnections = page.getByRole(AriaRole.LINK, Page.GetByRoleOptions().setName("Verbindungen suchen"))
     private val `continue` = page.getByRole(AriaRole.BUTTON, Page.GetByRoleOptions().setName("weiter"))
