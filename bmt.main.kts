@@ -12,8 +12,7 @@ import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
-val today: ZonedDateTime = ZonedDateTime.now(ZoneId.of("Europe/Berlin"))
-val tomorrow: ZonedDateTime = today.plusDays(1L)
+val tomorrow: ZonedDateTime = ZonedDateTime.now(ZoneId.of("Europe/Berlin")).plusDays(1L)
 val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy")
 
 Playwright.create().use { playwright ->
