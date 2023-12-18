@@ -89,7 +89,7 @@ class BookingPage(private val page: Page) {
         stationStart.fill(start.value)
         stationEnd.fill(end.value)
 
-        date.fill(tomorrow.format(DateTimeFormatter.ofPattern("dd.MM.yyyy")))
+        date.fill(formatter.format(tomorrow))
         time.fill(departure.value)
 
         findConnections.click()
