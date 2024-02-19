@@ -24,14 +24,14 @@ Playwright.create().use { playwright ->
 fun bookReturnTrip(context: BrowserContext) {
     bookTicket(
         context.newPage(),
-        StationStart("Lommersum Kirche, Weilerswist"),
+        StationStart("Lommersum Grundschule, Weilerswist"),
         StationEnd("Weilerswist Bf, Weilerswist"),
         selectDeparture()
     )
 }
 
 fun selectDeparture() =
-    if (tomorrow.dayOfWeek == DayOfWeek.FRIDAY) Departure("13:47") else Departure("14:48")
+    if (tomorrow.dayOfWeek == DayOfWeek.FRIDAY) Departure("13:47") else Departure("14:47")
 
 fun bookTicket(page: Page, stationStart: StationStart, stationEnd: StationEnd, departure: Departure) {
     openLoginPage(page)
