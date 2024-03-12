@@ -1,6 +1,6 @@
 #!/usr/bin/env kotlin
 
-@file:DependsOn("com.microsoft.playwright:playwright:1.41.2")
+@file:DependsOn("com.microsoft.playwright:playwright:1.42.0")
 
 import com.microsoft.playwright.BrowserContext
 import com.microsoft.playwright.Locator
